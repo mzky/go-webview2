@@ -77,4 +77,10 @@ type WebView interface {
 	// f must be a function
 	// f must return either value and error or just error
 	Bind(name string, f interface{}) error
+
+	LockMutex(s string) error
+
+	MessageBox(caption, text string)
+
+	FindWindowToTop(title string)
 }

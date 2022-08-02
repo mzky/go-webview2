@@ -6,16 +6,16 @@ package webview2
 import (
 	"encoding/json"
 	"errors"
+	"github.com/jchv/go-webview2/internal/w32"
+	"github.com/jchv/go-webview2/pkg/edge"
+	"github.com/lxn/win"
+	"golang.org/x/sys/windows"
 	"log"
 	"reflect"
 	"strconv"
 	"sync"
+	"syscall"
 	"unsafe"
-
-	"github.com/jchv/go-webview2/internal/w32"
-	"github.com/jchv/go-webview2/pkg/edge"
-
-	"golang.org/x/sys/windows"
 )
 
 var (
@@ -46,6 +46,7 @@ type browser interface {
 }
 
 type webview struct {
+	Handle     win.HWND
 	hwnd       uintptr
 	mainthread uintptr
 	browser    browser
@@ -344,6 +345,8 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 }
 
 func (w *webview) Destroy() {
+	w.Terminate()
+	_, _, _ = w32.User32DestroyWindow.Call(w.hwnd)
 }
 
 func (w *webview) Run() {
@@ -473,4 +476,91 @@ func (w *webview) Bind(name string, f interface{}) error {
 	})()`)
 
 	return nil
+}
+
+func (w *webview) GetHWnd() win.HWND {
+	return win.HWND(w.hwnd)
+}
+
+func _TEXT(str string) *uint16 {
+	ptr, _ := syscall.UTF16PtrFromString(str)
+	return ptr
+}
+
+func (w *webview) MessageBox(caption, text string) {
+	win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
+}
+
+func StringToUint16(name string) *uint16 {
+	ptr, _ := syscall.UTF16PtrFromString(name)
+	return ptr
+}
+
+// LockMutex windows下的单实例锁
+func (w *webview) LockMutex(name string) error {
+	_, err := windows.CreateMutex(nil, true, StringToUint16(name))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
+// 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
+func (w *webview) FindWindowToTop(windowTitle string) {
+	w.Handle = win.FindWindow(StringToUint16("webview"), StringToUint16(windowTitle))
+	w.MoveToCenter()
+	w.RestoreWindow()
+	w.MostTop(true)
+	w.MostTop(false) // 需要加这句，否则一直置顶，无法切换到其它程序
+	w.ToTop()
+}
+
+func (w *webview) ToTop() {
+	rect := &win.RECT{}
+	win.GetWindowRect(w.Handle, rect)
+	win.SetWindowPos(w.Handle, win.HWND_TOP, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+}
+
+func (w *webview) MostTop(isTop bool) {
+	rect := &win.RECT{}
+	win.GetWindowRect(w.Handle, rect)
+	if isTop {
+		win.SetWindowPos(w.Handle, win.HWND_TOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+	} else {
+		win.SetWindowPos(w.Handle, win.HWND_NOTOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+	}
+}
+
+func (w *webview) RestoreWindow() {
+	win.ShowWindow(w.Handle, win.SW_RESTORE)
+}
+
+func (w *webview) MoveToCenter() {
+	var width int32 = 0
+	var height int32 = 0
+	{
+		rect := &win.RECT{}
+		win.GetWindowRect(w.Handle, rect)
+		width = rect.Right - rect.Left
+		height = rect.Bottom - rect.Top
+	}
+
+	var parentWidth int32 = 0
+	var parentHeight int32 = 0
+	if win.GetWindowLong(w.Handle, win.GWL_STYLE) == win.WS_CHILD {
+		parent := win.GetParent(w.Handle)
+		rect := &win.RECT{}
+		win.GetClientRect(parent, rect)
+		parentWidth = rect.Right - rect.Left
+		parentHeight = rect.Bottom - rect.Top
+	} else {
+		parentWidth = win.GetSystemMetrics(win.SM_CXSCREEN)
+		parentHeight = win.GetSystemMetrics(win.SM_CYSCREEN)
+	}
+
+	x := (parentWidth - width) / 2
+	y := (parentHeight - height) / 2
+
+	win.MoveWindow(w.Handle, x, y, width, height, false)
 }
