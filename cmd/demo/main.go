@@ -23,6 +23,6 @@ func main() {
 	}
 	defer w.Destroy()
 	w.SetSize(800, 600, webview2.HintFixed)
-	w.Navigate("https://en.m.wikipedia.org/wiki/Main_Page")
+	w.Navigate("https://www.baidu.com")
 	w.Run()
 }
