@@ -10,10 +10,9 @@ import (
 	"github.com/lxn/win"
 	"github.com/mzky/go-webview2/internal/w32"
 	"github.com/mzky/go-webview2/pkg/edge"
-	"github.com/mzky/webview2runtime"
+	"github.com/mzky/go-webview2/webviewloader"
 	"golang.org/x/sys/windows"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 	"sync"
@@ -98,6 +97,10 @@ func NewWindow(debug bool, window unsafe.Pointer) WebView {
 // NewWithOptions creates a new webview using the provided options.
 func NewWithOptions(options WebViewOptions) WebView {
 	w := &webview{}
+	if err := w.Webview2AutoInstall(); err != nil {
+		log.Fatal(err)
+	}
+
 	w.bindings = map[string]interface{}{}
 	w.autofocus = options.AutoFocus
 
@@ -269,9 +272,6 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 }
 
 func (w *webview) CreateWithOptions(opts WindowOptions) bool {
-	if w.Webview2AutoInstall() != nil {
-		os.Exit(0)
-	}
 	var wHandle windows.Handle
 	_ = windows.GetModuleHandleEx(0, nil, &wHandle)
 
@@ -498,6 +498,14 @@ func _TEXT(str string) *uint16 {
 	return ptr
 }
 
+func (w *webview) MessageConfirmBox(caption, text string) int32 {
+	return win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_OKCANCEL)
+}
+
+func (w *webview) MessageErrorBox(caption, text string) {
+	win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_ICONERROR)
+}
+
 func (w *webview) MessageBox(caption, text string) {
 	win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
 }
@@ -582,27 +590,26 @@ func (w *webview) MoveToCenter() {
 
 // Webview2AutoInstall 根据需要自动下载安装webview2依赖
 func (w *webview) Webview2AutoInstall() error {
-	installedVersion := webview2runtime.GetInstalledVersion()
+	installedVersion := webviewloader.GetInstalledWebViewVersion()
 	if installedVersion != "" {
+		w.MessageBox("ddd", installedVersion)
 		fmt.Println("webview2 version:" + installedVersion)
 		return nil
 	}
-	confirmed, err := webview2runtime.Confirm(`    Windows10以下版本操作系统，首次运行当前程序时，
-    需安装微软的WebView2组件，点击[确定]自动安装！`, "提示消息")
-	if err != nil {
-		return err
-	}
-	if confirmed {
-		installedCorrectly, err := webview2runtime.InstallUsingBootstrapper()
+	confirmed := w.MessageConfirmBox("提示消息", `    Windows10以下版本操作系统，首次运行当前程序时，
+    需安装微软的WebView2组件，点击[确定]自动安装！`)
+
+	if int(confirmed) == 1 {
+		installedCorrectly, err := webviewloader.InstallUsingBootstrapper()
 		if err != nil {
-			_ = webview2runtime.Error(err.Error(), "异常消息")
+			w.MessageErrorBox("异常消息", err.Error())
 			return err
 		}
 		if !installedCorrectly {
-			_ = webview2runtime.Error(`    安装微软的WebView2组件失败，请：
+			w.MessageErrorBox("异常消息", `    安装微软的WebView2组件失败，请：
         1、关闭防火墙和某某卫士
         2、确保外网能够正常访问
-        3、重新执行当前程序再试`, "异常消息")
+        3、重新执行当前程序再试`)
 			return errors.New("install fail")
 		}
 	}
