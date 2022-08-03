@@ -592,7 +592,6 @@ func (w *webview) MoveToCenter() {
 func (w *webview) Webview2AutoInstall() error {
 	installedVersion := webviewloader.GetInstalledWebViewVersion()
 	if installedVersion != "" {
-		w.MessageBox("ddd", installedVersion)
 		fmt.Println("webview2 version:" + installedVersion)
 		return nil
 	}
