@@ -207,7 +207,7 @@ func InstallUsingBootstrapper() (bool, error) {
 func runInstaller(installer string) (bool, error) {
 	// Credit: https://stackoverflow.com/a/10385867
 	//cmd := exec.Command(installer)
-	cmd := exec.Command(installer, "/silent", "/install") // 已安装时跳过
+	cmd := exec.Command(installer, "/install") // 已安装时跳过(后台执行参数："/silent")
 	if err := cmd.Start(); err != nil {
 		return false, err
 	}
