@@ -408,6 +408,7 @@ func (w *webview) SetTitle(title string) {
 	_, _, _ = w32.User32SetWindowTextW.Call(w.hWnd, uintptr(unsafe.Pointer(&_title[0])))
 }
 
+// SetSize 这个方法有点复杂，可以参考win.SetWindowPos方法
 func (w *webview) SetSize(width int, height int, hints Hint) {
 	index := w32.GWLStyle
 	style, _, _ := w32.User32GetWindowLongPtrW.Call(w.hWnd, uintptr(index))
