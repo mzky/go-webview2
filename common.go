@@ -81,14 +81,34 @@ type WebView interface {
 	// f must return either value and error or just error
 	Bind(name string, f interface{}) error
 
-	// LockMutex 单实例锁
+	// LockMutex windows下的单实例锁
 	LockMutex(s string) error
+
+	// MessageBox windows消息弹窗
 	MessageBox(caption, text string)
+
+	// ToTop 显示到最上层（非强制）
 	ToTop()
+
+	// MostTop 移动到最上层（参数为true时，强制到最上层，否则显示在其他最上层窗口后）
 	MostTop(isTop bool)
+
+	// RestoreWindow 还原窗口（一般为最小化后执行此方法还原窗口）
 	RestoreWindow()
+
+	// MoveToCenter 窗口屏幕居中
 	MoveToCenter()
+
+	// FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
+	// 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
 	FindWindowToTop(title string)
+
+	// GetHWnd HWND的uintptr转为win.HWND
 	GetHWnd() win.HWND
+
+	// Webview2AutoInstall 根据需要自动下载安装webview2依赖
 	Webview2AutoInstall() error
+
+	// RunCall 程序退出前执行自定义回调
+	RunCall(callback func())
 }
