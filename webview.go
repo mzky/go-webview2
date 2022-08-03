@@ -597,7 +597,6 @@ func (w *webview) Webview2AutoInstall() error {
 	}
 	confirmed := w.MessageConfirmBox("提示消息", `    Windows10以下版本操作系统，首次运行当前程序时，
     需安装微软的WebView2组件，点击[确定]自动安装！`)
-
 	if int(confirmed) == 1 {
 		installedCorrectly, err := webviewloader.InstallUsingBootstrapper()
 		if err != nil {
