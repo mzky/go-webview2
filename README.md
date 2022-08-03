@@ -1,10 +1,10 @@
-新增和修改：
+[![Go](https://github.com/jchv/go-webview2/actions/workflows/go.yml/badge.svg)](https://github.com/jchv/go-webview2/actions/workflows/go.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/jchv/go-webview2)](https://goreportcard.com/report/github.com/jchv/go-webview2) [![Go Reference](https://pkg.go.dev/badge/github.com/jchv/go-webview2.svg)](https://pkg.go.dev/github.com/jchv/go-webview2)
+
+# 新增和修改：
 - 增加单实例锁，二开时将已开窗口置顶、居中
-- 增加自动检测系统webview2版本，没有安装时根据提示自动安装（win7+测试正常）
+- 增加自动检测系统webview2版本，没有安装时根据提示自动安装（win7_x64+测试正常,win7_x86无法自动安装webview2依赖）
 - 增加弹窗MessageBox
 
-
-[![Go](https://github.com/jchv/go-webview2/actions/workflows/go.yml/badge.svg)](https://github.com/jchv/go-webview2/actions/workflows/go.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/jchv/go-webview2)](https://goreportcard.com/report/github.com/jchv/go-webview2) [![Go Reference](https://pkg.go.dev/badge/github.com/jchv/go-webview2.svg)](https://pkg.go.dev/github.com/jchv/go-webview2)
 
 # go-webview2
 This package provides an interface for using the Microsoft Edge WebView2 component with Go. It is based on [webview/webview](https://github.com/webview/webview) and provides a compatible API.
