@@ -513,8 +513,8 @@ func (w *webview) LockMutex(name string) error {
 // 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
 func (w *webview) FindWindowToTop(windowTitle string) {
 	w.hwnd = uintptr(win.FindWindow(StringToUint16("webview"), StringToUint16(windowTitle)))
-	w.MoveToCenter()
 	w.RestoreWindow()
+	w.MoveToCenter()
 	w.MostTop(true)
 	w.MostTop(false) // 需要加这句，否则一直置顶，无法切换到其它程序
 	w.ToTop()
