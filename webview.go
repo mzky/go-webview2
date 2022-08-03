@@ -6,11 +6,13 @@ package webview2
 import (
 	"encoding/json"
 	"errors"
+	"github.com/fire988/webview2runtime"
 	"github.com/lxn/win"
 	"github.com/mzky/go-webview2/internal/w32"
 	"github.com/mzky/go-webview2/pkg/edge"
 	"golang.org/x/sys/windows"
 	"log"
+	"os"
 	"reflect"
 	"strconv"
 	"sync"
@@ -46,7 +48,6 @@ type browser interface {
 }
 
 type webview struct {
-	Handle     win.HWND
 	hwnd       uintptr
 	mainthread uintptr
 	browser    browser
@@ -219,7 +220,7 @@ func (w *webview) callbinding(d rpcMessage) (interface{}, error) {
 	}
 }
 
-func wndproc(hwnd, msg, wp, lp uintptr) uintptr {
+func wndProc(hwnd, msg, wp, lp uintptr) uintptr {
 	if w, ok := getWindowContext(hwnd).(*webview); ok {
 		switch msg {
 		case w32.WMMove, w32.WMMoving:
@@ -267,28 +268,31 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 }
 
 func (w *webview) CreateWithOptions(opts WindowOptions) bool {
-	var hinstance windows.Handle
-	_ = windows.GetModuleHandleEx(0, nil, &hinstance)
+	if w.Webview2AutoInstall() != nil {
+		os.Exit(0)
+	}
+	var wHandle windows.Handle
+	_ = windows.GetModuleHandleEx(0, nil, &wHandle)
 
 	var icon uintptr
 	if opts.IconId == 0 {
 		// load default icon
 		icow, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCxIcon)
 		icoh, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCyIcon)
-		icon, _, _ = w32.User32LoadImageW.Call(uintptr(hinstance), 32512, icow, icoh, 0)
+		icon, _, _ = w32.User32LoadImageW.Call(uintptr(wHandle), 32512, icow, icoh, 0)
 	} else {
 		// load icon from resource
-		icon, _, _ = w32.User32LoadImageW.Call(uintptr(hinstance), uintptr(opts.IconId), 1, 0, 0, w32.LR_DEFAULTSIZE|w32.LR_SHARED)
+		icon, _, _ = w32.User32LoadImageW.Call(uintptr(wHandle), uintptr(opts.IconId), 1, 0, 0, w32.LR_DEFAULTSIZE|w32.LR_SHARED)
 	}
 
 	className, _ := windows.UTF16PtrFromString("webview")
 	wc := w32.WndClassExW{
 		CbSize:        uint32(unsafe.Sizeof(w32.WndClassExW{})),
-		HInstance:     hinstance,
+		HInstance:     wHandle,
 		LpszClassName: className,
 		HIcon:         windows.Handle(icon),
 		HIconSm:       windows.Handle(icon),
-		LpfnWndProc:   windows.NewCallback(wndproc),
+		LpfnWndProc:   windows.NewCallback(wndProc),
 	}
 	_, _, _ = w32.User32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 
@@ -328,7 +332,7 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 		uintptr(windowHeight),
 		0,
 		0,
-		uintptr(hinstance),
+		uintptr(wHandle),
 		0,
 	)
 	setWindowContext(w.hwnd, w)
@@ -508,7 +512,7 @@ func (w *webview) LockMutex(name string) error {
 // FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
 // 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
 func (w *webview) FindWindowToTop(windowTitle string) {
-	w.Handle = win.FindWindow(StringToUint16("webview"), StringToUint16(windowTitle))
+	w.hwnd = uintptr(win.FindWindow(StringToUint16("webview"), StringToUint16(windowTitle)))
 	w.MoveToCenter()
 	w.RestoreWindow()
 	w.MostTop(true)
@@ -516,40 +520,44 @@ func (w *webview) FindWindowToTop(windowTitle string) {
 	w.ToTop()
 }
 
+// ToTop 显示到最上层（非强制）
 func (w *webview) ToTop() {
 	rect := &win.RECT{}
-	win.GetWindowRect(w.Handle, rect)
-	win.SetWindowPos(w.Handle, win.HWND_TOP, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+	win.GetWindowRect(w.GetHWnd(), rect)
+	win.SetWindowPos(w.GetHWnd(), win.HWND_TOP, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
 }
 
+// MostTop 移动到最上层（参数为true时，强制到最上层，否则显示在其他最上层窗口后）
 func (w *webview) MostTop(isTop bool) {
 	rect := &win.RECT{}
-	win.GetWindowRect(w.Handle, rect)
+	win.GetWindowRect(w.GetHWnd(), rect)
 	if isTop {
-		win.SetWindowPos(w.Handle, win.HWND_TOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+		win.SetWindowPos(w.GetHWnd(), win.HWND_TOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
 	} else {
-		win.SetWindowPos(w.Handle, win.HWND_NOTOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
+		win.SetWindowPos(w.GetHWnd(), win.HWND_NOTOPMOST, rect.Left, rect.Top, rect.Right-rect.Left, rect.Bottom-rect.Top, 0)
 	}
 }
 
+// RestoreWindow 还原窗口（一般为最小化后执行此方法还原窗口）
 func (w *webview) RestoreWindow() {
-	win.ShowWindow(w.Handle, win.SW_RESTORE)
+	win.ShowWindow(w.GetHWnd(), win.SW_RESTORE)
 }
 
+// MoveToCenter 窗口屏幕居中
 func (w *webview) MoveToCenter() {
 	var width int32 = 0
 	var height int32 = 0
 	{
 		rect := &win.RECT{}
-		win.GetWindowRect(w.Handle, rect)
+		win.GetWindowRect(w.GetHWnd(), rect)
 		width = rect.Right - rect.Left
 		height = rect.Bottom - rect.Top
 	}
 
 	var parentWidth int32 = 0
 	var parentHeight int32 = 0
-	if win.GetWindowLong(w.Handle, win.GWL_STYLE) == win.WS_CHILD {
-		parent := win.GetParent(w.Handle)
+	if win.GetWindowLong(w.GetHWnd(), win.GWL_STYLE) == win.WS_CHILD {
+		parent := win.GetParent(w.GetHWnd())
 		rect := &win.RECT{}
 		win.GetClientRect(parent, rect)
 		parentWidth = rect.Right - rect.Left
@@ -562,5 +570,34 @@ func (w *webview) MoveToCenter() {
 	x := (parentWidth - width) / 2
 	y := (parentHeight - height) / 2
 
-	win.MoveWindow(w.Handle, x, y, width, height, false)
+	win.MoveWindow(w.GetHWnd(), x, y, width, height, false)
+}
+
+// Webview2AutoInstall 根据需要自动下载安装webview2依赖
+func (w *webview) Webview2AutoInstall() error {
+	installedVersion := webview2runtime.GetInstalledVersion()
+	if installedVersion != nil && installedVersion.Version != "" {
+		return nil
+	}
+	confirmed, err := webview2runtime.Confirm(`    Windows10以下版本操作系统，首次运行当前程序时，
+    需安装微软的WebView2组件，点击[确定]自动安装！`, "提示消息")
+	if err != nil {
+		return err
+	}
+	if confirmed {
+		installedCorrectly, err := webview2runtime.InstallUsingBootstrapper()
+		if err != nil {
+			_ = webview2runtime.Error(err.Error(), "异常消息")
+			return err
+		}
+		if !installedCorrectly {
+			_ = webview2runtime.Error(`    安装微软的WebView2组件失败，请：
+        1、关闭防火墙和某某卫士
+        2、确保外网能够正常访问
+        3、重新执行当前程序再试`, "异常消息")
+			return errors.New("install fail")
+		}
+	}
+
+	return nil
 }

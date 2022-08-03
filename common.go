@@ -1,6 +1,9 @@
 package webview2
 
-import "unsafe"
+import (
+	"github.com/lxn/win"
+	"unsafe"
+)
 
 // This is copied from webview/webview.
 // The documentation is included for convenience.
@@ -78,9 +81,14 @@ type WebView interface {
 	// f must return either value and error or just error
 	Bind(name string, f interface{}) error
 
+	// LockMutex 单实例锁
 	LockMutex(s string) error
-
 	MessageBox(caption, text string)
-
+	ToTop()
+	MostTop(isTop bool)
+	RestoreWindow()
+	MoveToCenter()
 	FindWindowToTop(title string)
+	GetHWnd() win.HWND
+	Webview2AutoInstall() error
 }
