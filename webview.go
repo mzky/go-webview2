@@ -6,10 +6,11 @@ package webview2
 import (
 	"encoding/json"
 	"errors"
-	"github.com/fire988/webview2runtime"
+	"fmt"
 	"github.com/lxn/win"
 	"github.com/mzky/go-webview2/internal/w32"
 	"github.com/mzky/go-webview2/pkg/edge"
+	"github.com/mzky/webview2runtime"
 	"golang.org/x/sys/windows"
 	"log"
 	"os"
@@ -349,8 +350,8 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 }
 
 func (w *webview) Destroy() {
-	w.Terminate()
 	_, _, _ = w32.User32DestroyWindow.Call(w.hWnd)
+	_, _, _ = w32.User32PostQuitMessage.Call(0)
 }
 
 func (w *webview) Run() {
@@ -582,7 +583,8 @@ func (w *webview) MoveToCenter() {
 // Webview2AutoInstall 根据需要自动下载安装webview2依赖
 func (w *webview) Webview2AutoInstall() error {
 	installedVersion := webview2runtime.GetInstalledVersion()
-	if installedVersion != nil && installedVersion.Version != "" {
+	if installedVersion != "" {
+		fmt.Println("webview2 version:" + installedVersion)
 		return nil
 	}
 	confirmed, err := webview2runtime.Confirm(`    Windows10以下版本操作系统，首次运行当前程序时，
