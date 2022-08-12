@@ -533,13 +533,15 @@ func LockMutex(name string) error {
 
 // FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
 // 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
-func (w *webview) FindWindowToTop(windowTitle string) {
-	w.hWnd = uintptr(win.FindWindow(_TEXT("webview"), _TEXT(windowTitle)))
-	w.RestoreWindow()
-	w.MoveToCenter()
-	w.MostTop(true)
-	w.MostTop(false) // 需要加这句，否则一直置顶，无法切换到其它程序
-	w.ToTop()
+func FindWindowToTop(windowTitle string) webview {
+	wv := webview{}
+	wv.hWnd = uintptr(win.FindWindow(_TEXT("webview"), _TEXT(windowTitle)))
+	wv.RestoreWindow()
+	wv.MoveToCenter()
+	wv.MostTop(true)
+	wv.MostTop(false) // 需要加这句，否则一直置顶，无法切换到其它程序
+	wv.ToTop()
+	return wv
 }
 
 // ToTop 显示到最上层（非强制）

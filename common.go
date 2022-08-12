@@ -96,10 +96,6 @@ type WebView interface {
 	// MoveToCenter 窗口屏幕居中
 	MoveToCenter()
 
-	// FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
-	// 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
-	FindWindowToTop(title string)
-
 	// GetHWnd HWND的uintptr转为win.HWND
 	GetHWnd() win.HWND
 
