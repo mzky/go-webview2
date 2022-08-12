@@ -32,9 +32,10 @@ var (
 )
 
 // CompareBrowserVersions will compare the 2 given versions and return:
-//  -1 = v1 < v2
-//   0 = v1 == v2
-//   1 = v1 > v2
+//
+//	-1 = v1 < v2
+//	 0 = v1 == v2
+//	 1 = v1 > v2
 func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 	_v1, err := windows.UTF16PtrFromString(v1)
 	if err != nil {
@@ -190,6 +191,7 @@ func getKeyValue(k registry.Key, name string) string {
 // the latest version of the runtime.
 // Returns true if the installer ran successfully.
 // Returns an error if something goes wrong
+// 注意，此exe不支持arm64芯片
 func InstallUsingBootstrapper() (bool, error) {
 	exePath := filepath.Join(os.TempDir(), "MicrosoftEdgeWebview2Setup.exe")
 	if err := ioutil.WriteFile(exePath, webview2setup, 0755); err != nil {

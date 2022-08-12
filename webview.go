@@ -498,11 +498,11 @@ func _TEXT(str string) *uint16 {
 	return ptr
 }
 
-func (w *webview) MessageConfirmBox(caption, text string) int32 {
+func (w *webview) MessageBoxConfirm(caption, text string) int32 {
 	return win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_OKCANCEL)
 }
 
-func (w *webview) MessageErrorBox(caption, text string) {
+func (w *webview) MessageBoxError(caption, text string) {
 	win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_ICONERROR)
 }
 
@@ -510,14 +510,14 @@ func (w *webview) MessageBox(caption, text string) {
 	win.MessageBox(w.GetHWnd(), _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
 }
 
-func StringToUint16(name string) *uint16 {
-	ptr, _ := syscall.UTF16PtrFromString(name)
-	return ptr
+func MessageBox(caption, text string) {
+	var handle windows.Handle
+	win.MessageBox(win.HWND(handle), _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
 }
 
 // LockMutex windows下的单实例锁
 func (w *webview) LockMutex(name string) error {
-	_, err := windows.CreateMutex(nil, true, StringToUint16(name))
+	_, err := windows.CreateMutex(nil, true, _TEXT(name))
 	if err != nil {
 		return err
 	}
@@ -527,7 +527,7 @@ func (w *webview) LockMutex(name string) error {
 // FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
 // 调用此方法前，要重置当前Title，否则查找的焦点优先为自身，w.SetTitle("注销") // 必须，否则焦点会是自己，而不是最先打开的客户端
 func (w *webview) FindWindowToTop(windowTitle string) {
-	w.hWnd = uintptr(win.FindWindow(StringToUint16("webview"), StringToUint16(windowTitle)))
+	w.hWnd = uintptr(win.FindWindow(_TEXT("webview"), _TEXT(windowTitle)))
 	w.RestoreWindow()
 	w.MoveToCenter()
 	w.MostTop(true)
@@ -595,16 +595,16 @@ func (w *webview) Webview2AutoInstall() error {
 		fmt.Println("webview2 version:" + installedVersion)
 		return nil
 	}
-	confirmed := w.MessageConfirmBox("提示消息", `    Windows10以下版本操作系统，首次运行当前程序时，
+	confirmed := w.MessageBoxConfirm("提示消息", `    Windows10以下版本操作系统，首次运行当前程序时，
     需安装微软的WebView2组件，点击[确定]自动安装！`)
 	if int(confirmed) == 1 {
 		installedCorrectly, err := webviewloader.InstallUsingBootstrapper()
 		if err != nil {
-			w.MessageErrorBox("异常消息", err.Error())
+			w.MessageBoxError("异常消息", err.Error())
 			return err
 		}
 		if !installedCorrectly {
-			w.MessageErrorBox("异常消息", `    安装微软的WebView2组件失败，请：
+			w.MessageBoxError("异常消息", `    安装微软的WebView2组件失败，请：
         1、关闭防火墙和某某卫士
         2、确保外网能够正常访问
         3、重新执行当前程序再试`)

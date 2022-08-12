@@ -81,6 +81,8 @@ const (
 )
 
 const (
+	WMPaint         = 0x000F
+	WMCreate        = 0x0001
 	WMDestroy       = 0x0002
 	WMMove          = 0x0003
 	WMSize          = 0x0005
