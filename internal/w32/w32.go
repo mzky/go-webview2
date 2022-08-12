@@ -70,7 +70,19 @@ const (
 )
 
 const (
-	SWShow = 5
+	SWNORMAL          = 1
+	SWSHOWNORMAL      = 1
+	SWSHOWMINIMIZED   = 2
+	SWMAXIMIZE        = 3
+	SWSHOWMAXIMIZED   = 3
+	SWSHOWNOACTIVATE  = 4
+	SWShow            = 5
+	SWMINIMIZE        = 6
+	SWSHOWMINNOACTIVE = 7
+	SWSHOWNA          = 8
+	SWRESTORE         = 9
+	SWSHOWDEFAULT     = 10
+	SWFORCEMINIMIZE   = 11
 )
 
 const (

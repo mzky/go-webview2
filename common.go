@@ -81,9 +81,6 @@ type WebView interface {
 	// f must return either value and error or just error
 	Bind(name string, f interface{}) error
 
-	// LockMutex windows下的单实例锁
-	LockMutex(s string) error
-
 	// MessageBox windows消息弹窗
 	MessageBox(caption, text string)
 
@@ -111,4 +108,6 @@ type WebView interface {
 
 	// RunCall 程序退出前执行自定义回调
 	Start(callback func())
+
+	GetBrowser() browser
 }

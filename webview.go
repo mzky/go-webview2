@@ -338,7 +338,10 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 	)
 	setWindowContext(w.hWnd, w)
 
-	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWShow)
+	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWSHOWNOACTIVATE)
+	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWSHOWMINIMIZED)
+	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWMINIMIZE)
+
 	_, _, _ = w32.User32UpdateWindow.Call(w.hWnd)
 	_, _, _ = w32.User32SetFocus.Call(w.hWnd)
 
@@ -448,6 +451,10 @@ func (w *webview) Eval(js string) {
 	w.browser.Eval(js)
 }
 
+func (w *webview) GetBrowser() browser {
+	return w.browser
+}
+
 func (w *webview) Dispatch(f func()) {
 	w.m.Lock()
 	w.dispatcher = append(w.dispatcher, f)
@@ -516,7 +523,7 @@ func MessageBox(caption, text string) {
 }
 
 // LockMutex windows下的单实例锁
-func (w *webview) LockMutex(name string) error {
+func LockMutex(name string) error {
 	_, err := windows.CreateMutex(nil, true, _TEXT(name))
 	if err != nil {
 		return err
