@@ -110,5 +110,5 @@ type WebView interface {
 	Webview2AutoInstall() error
 
 	// RunCall 程序退出前执行自定义回调
-	RunCall(callback func())
+	Start(callback func())
 }

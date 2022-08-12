@@ -355,10 +355,10 @@ func (w *webview) Destroy() {
 }
 
 func (w *webview) Run() {
-	w.RunCall(func() {})
+	w.Start(func() {})
 }
 
-func (w *webview) RunCall(callback func()) {
+func (w *webview) Start(callback func()) {
 	var msg w32.Msg
 	for {
 		_, _, _ = w32.User32GetMessageW.Call(
