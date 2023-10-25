@@ -1,7 +1,5 @@
 github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 h1:pdFFlHXY9tZXmJz+tRSm1DzYEH4ebha7cffmm607bMU=
 github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5/go.mod h1:alcuEEnZsY1WQsagKhZDsoPCRoOijYqhZvPwLG0kzVs=
-github.com/jthmath/winapi v0.0.0-20170505022915-d8c4352fe12b h1:Cf+nxhH+CmAOHjLlI4AJUd5fk+GVE1MiTVY3T7mNC2U=
-github.com/jthmath/winapi v0.0.0-20170505022915-d8c4352fe12b/go.mod h1:UpusYEwg516TOl+zgw5G3XIMleDY9Ai9lwqtrDt1QWI=
 github.com/lxn/win v0.0.0-20210218163916-a377121e959e h1:H+t6A/QJMbhCSEH5rAuRxh+CtW96g0Or0Fxa9IKr4uc=
 github.com/lxn/win v0.0.0-20210218163916-a377121e959e/go.mod h1:KxxjdtRkfNoYDCUP5ryK7XJJNTnpC8atvtmTheChOtk=
 golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
