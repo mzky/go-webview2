@@ -41,6 +41,7 @@ type browser interface {
 	Embed(hWnd uintptr) bool
 	Resize()
 	Navigate(url string)
+	NavigateToString(htmlContent string)
 	Init(script string)
 	Eval(script string)
 	NotifyParentWindowPositionChanged() error
@@ -338,9 +339,9 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 	)
 	setWindowContext(w.hWnd, w)
 
-	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWSHOWNOACTIVATE)
-	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWSHOWMINIMIZED)
-	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWMINIMIZE)
+	_, _, _ = w32.User32ShowWindow.Call(w.hWnd, w32.SWShow)
+	_, _, _ = w32.User32UpdateWindow.Call(w.hWnd)
+	_, _, _ = w32.User32SetFocus.Call(w.hWnd)
 
 	_, _, _ = w32.User32UpdateWindow.Call(w.hWnd)
 	_, _, _ = w32.User32SetFocus.Call(w.hWnd)
@@ -390,6 +391,10 @@ func (w *webview) Start(callback func()) {
 		_, _, _ = w32.User32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
 		_, _, _ = w32.User32DispatchMessageW.Call(uintptr(unsafe.Pointer(&msg)))
 	}
+}
+
+func (w *webview) SetHtml(html string) {
+	w.browser.NavigateToString(html)
 }
 
 func (w *webview) Terminate() {

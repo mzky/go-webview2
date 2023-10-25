@@ -33,6 +33,7 @@ var (
 	User32DefWindowProcW     = user32.NewProc("DefWindowProcW")
 	User32GetClientRect      = user32.NewProc("GetClientRect")
 	User32PostQuitMessage    = user32.NewProc("PostQuitMessage")
+	User32PostMessageW       = user32.NewProc("PostMessageW")
 	User32SetWindowTextW     = user32.NewProc("SetWindowTextW")
 	User32PostThreadMessageW = user32.NewProc("PostThreadMessageW")
 	User32GetWindowLongPtrW  = user32.NewProc("GetWindowLongPtrW")
@@ -119,7 +120,7 @@ const (
 
 const (
 	WSOverlapped       = 0x00000000
-	WSMaximizeBox      = 0x00020000
+	WSMaximizeBox      = 0x00010000
 	WSThickFrame       = 0x00040000
 	WSCaption          = 0x00C00000
 	WSSysMenu          = 0x00080000
