@@ -83,6 +83,8 @@ type WebViewOptions struct {
 	// WindowOptions customizes the window that is created to embed the
 	// WebView2 widget.
 	WindowOptions WindowOptions
+
+	Webview2AutoInstall bool
 }
 
 // New creates a new webview in a new window.
@@ -98,8 +100,10 @@ func NewWindow(debug bool, window unsafe.Pointer) WebView {
 // NewWithOptions creates a new webview using the provided options.
 func NewWithOptions(options WebViewOptions) WebView {
 	w := &webview{}
-	if err := w.Webview2AutoInstall(); err != nil {
-		log.Fatal(err)
+	if options.Webview2AutoInstall {
+		if err := w.Webview2AutoInstall(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	w.bindings = map[string]interface{}{}
