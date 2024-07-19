@@ -5,6 +5,17 @@
 - 增加自动检测系统webview2版本，没有安装时根据提示自动安装（win7+测试正常）
 - 增加弹窗MessageBox
 
+# win10以下
+- 默认需要安装webview2组件，文件100M多,离线环境比较麻烦
+- 可使用 https://github.com/mzky/weblink 做双内核客户端段解决此问题
+- 双内核版本加上集成的web静态文件，经过upx压缩后约12M左右
+  ```
+  v := webviewloader.GetInstalledWebViewVersion() // 取webView版本
+	if v == "" {
+	   \\使用blink内核
+	}
+  ```
+
 
 # go-webview2
 This package provides an interface for using the Microsoft Edge WebView2 component with Go. It is based on [webview/webview](https://github.com/webview/webview) and provides a compatible API.
