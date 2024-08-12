@@ -7,7 +7,7 @@
 
 # win10以下
 - 默认需要安装webview2组件，文件100M多,离线环境比较麻烦
-- 可使用 https://github.com/mzky/weblink 做双内核客户端段解决此问题
+- 可使用 https://github.com/mzky/weblink 做双内核客户端解决此问题
 - 双内核版本加上集成的web静态文件，经过upx压缩后约12M左右
   ```
   v := webviewloader.GetInstalledWebViewVersion() // 取webView版本
